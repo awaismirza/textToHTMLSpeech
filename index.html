@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Awais Text To Speech</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      max-height: 100vh;
+      max-width: 100%;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      height: 100vh;
+      /* padding: 20px; */
+      /* gap: 20px; */
+    }
+
+    header {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #6200ea;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .textAreaInput {
+      width: 100%;
+      height: 150px; /* Increased height */
+      border: 1px solid #ccc;
+      border-radius: 8px; /* Rounded corners */
+      font-size: 1.1rem; /* Slightly larger font */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #6200ea;
+      color: white;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #3700b3;
+    }
+
+    #textOutput {
+      width: 100%;
+      max-width: 800px; /* Match textarea width */
+      padding: 15px; /* Added more padding */
+      border: 1px solid #ccc;
+      border-radius: 8px; /* Rounded corners */
+      background-color: #f9f9f9; /* Light background */
+      font-size: 1.1rem; /* Slightly larger font */
+      min-height: 60%;
+      max-height: 60%; /* Increased minimum height */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      line-height: 1.6; /* Improved line spacing */
+      display: flex; /* Added display flex */
+      flex-direction: column; /* Added flex direction column */
+      align-items: flex-start; /* Align items to the start */
+      overflow-y: auto; /* Added overflow for scrolling */
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #6200ea;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="textOutput" class="renderText"></div>
+    <div>
+      <textarea id="textInput" class="textAreaInput" placeholder="Enter your text here..."></textarea>
+      <button id="clearButton">Clear</button>
+      <button id="speechButton">speech</button>
+    </div>
+  </div>
+  <header>Awais Text To Speech</header>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const textInput = document.getElementById('textInput');
+      const textOutput = document.getElementById('textOutput');
+
+      const stopButton = document.createElement('button');
+      stopButton.textContent = 'Stop Speech';
+      stopButton.style.display = 'none'; // Initially hidden
+      stopButton.style.marginLeft = '10px';
+
+      const shortcutButton = document.createElement('button');
+      shortcutButton.textContent = 'Trigger Shortcut';
+      shortcutButton.style.marginLeft = '10px';
+      stopButton.insertAdjacentElement('afterend', shortcutButton);
+
+      shortcutButton.addEventListener('click', () => {
+        alert('Shortcut triggered: Ctrl+Shift+U (Windows) or Cmd+Shift+U (Mac)');
+      });
+
+      stopButton.addEventListener('click', () => {
+        window.speechSynthesis.cancel(); // Stop ongoing speech
+        stopButton.style.display = 'none'; // Hide the stop button
+      });
+
+      textInput.addEventListener('input', () => {
+        const formattedText = textInput.value
+          .split('\n')
+          .map(line => `<p>${line}</p>`) // Wrap each line in a paragraph tag
+          .join('');
+
+        textOutput.innerHTML = formattedText;
+      });
+
+      document.getElementById('clearButton').addEventListener('click', () => {
+        document.getElementById('textInput').value = '';
+        document.getElementById('textOutput').innerHTML = '';
+      });
+
+      window.addEventListener('beforeunload', (event) => {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel(); // Stop ongoing speech
+          event.preventDefault();
+          event.returnValue = 'Speech will stop if you reload the page.'; // Show alert
+        }
+      });
+
+      speechButton.addEventListener('click', () => {
+        const textToSpeak = textInput.value;
+        if (textToSpeak.trim() !== '') {
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+          // Set high-quality speech properties
+          utterance.rate = 1; // Normal speed
+          utterance.pitch = 1; // Normal pitch
+          utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.lang === 'en-US'); // Use a high-quality voice
+
+          const words = textToSpeak.split(/\s+/);
+          let currentWordIndex = 0;
+
+          utterance.onboundary = (event) => {
+            if (event.name === 'word') {
+              const highlightedText = words
+                .map((word, index) => {
+                  if (index === currentWordIndex) {
+                    return `<span style='background-color: yellow;'>${word}</span>`;
+                  }
+                  return word;
+                })
+                .join(' ');
+
+              textOutput.innerHTML = highlightedText;
+              currentWordIndex++;
+            }
+          };
+
+          utterance.onend = () => {
+            textOutput.innerHTML = textToSpeak; // Reset to original text after speech ends
+            stopButton.style.display = 'none'; // Hide the stop button
+          };
+
+          stopButton.style.display = 'inline-block'; // Show the stop button
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
