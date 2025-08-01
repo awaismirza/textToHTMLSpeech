@@ -97,6 +97,7 @@
       <textarea id="textInput" class="textAreaInput" placeholder="Enter your text here..."></textarea>
       <button id="clearButton">Clear</button>
       <button id="speechButton">speech</button>
+      <button id="edgeSpeechButton">speech with Microsoft Edge</button>
     </div>
   </div>
   <header>Awais Text To Speech</header>
@@ -144,6 +145,13 @@
           event.preventDefault();
           event.returnValue = 'Speech will stop if you reload the page.'; // Show alert
         }
+      });
+
+      const edgeSpeechButton = document.getElementById('edgeSpeechButton');
+      edgeSpeechButton.addEventListener('click', () => {
+        alert('
+        To enable voice with Microsoft Edge, press Ctrl+Shift+U on Windows or Cmd+Shift+U on Mac.
+        '); 
       });
 
       speechButton.addEventListener('click', () => {
